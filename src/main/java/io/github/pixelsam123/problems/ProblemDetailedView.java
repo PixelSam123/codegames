@@ -1,9 +1,8 @@
 package io.github.pixelsam123.problems;
 
-public record Problem(
+public record ProblemDetailedView(
     String title,
     String description,
-    String initialCode,
-    String tests
+    String initialCode
 ) {
 }
