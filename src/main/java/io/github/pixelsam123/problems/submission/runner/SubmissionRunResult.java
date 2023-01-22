@@ -1,7 +1,7 @@
 package io.github.pixelsam123.problems.submission.runner;
 
 public record SubmissionRunResult(
-    int statusCode,
+    SubmissionRunStatus status,
     String stdout
 ) {
 }

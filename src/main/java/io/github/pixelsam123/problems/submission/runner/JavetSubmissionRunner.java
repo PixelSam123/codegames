@@ -1,10 +1,12 @@
 package io.github.pixelsam123.problems.submission.runner;
 
+import com.caoccao.javet.exceptions.JavetCompilationException;
 import com.caoccao.javet.exceptions.JavetException;
+import com.caoccao.javet.exceptions.JavetExecutionException;
+import com.caoccao.javet.interception.logging.BaseJavetConsoleInterceptor;
 import com.caoccao.javet.interop.V8Runtime;
 import com.caoccao.javet.interop.engine.IJavetEngine;
 import com.caoccao.javet.interop.engine.IJavetEnginePool;
-import com.caoccao.javet.interop.engine.JavetEnginePool;
 import com.caoccao.javet.values.V8Value;
 import io.smallrye.mutiny.Uni;
 
@@ -25,23 +27,72 @@ public class JavetSubmissionRunner implements ISubmissionRunner {
             try (IJavetEngine<V8Runtime> javetEngine = javetEnginePool.getEngine()) {
                 V8Runtime runtime = javetEngine.getV8Runtime();
 
-                try (V8Value result = runtime.getExecutor(jsCode).execute()) {
-                    return new SubmissionRunResult(0, result.toString());
-                }
+                StringBuilder stdout = new StringBuilder();
+                BaseJavetConsoleInterceptor consoleInterceptor = new BaseJavetConsoleInterceptor(
+                    runtime
+                ) {
+                    @Override
+                    public void consoleDebug(V8Value... v8Values) {
+                        for (V8Value value : v8Values) {
+                            stdout.append(value.toString()).append('\n');
+                        }
+                    }
+
+                    @Override
+                    public void consoleError(V8Value... v8Values) {
+                        for (V8Value value : v8Values) {
+                            stdout.append(value.toString()).append('\n');
+                        }
+                    }
+
+                    @Override
+                    public void consoleInfo(V8Value... v8Values) {
+                        for (V8Value value : v8Values) {
+                            stdout.append(value.toString()).append('\n');
+                        }
+                    }
+
+                    @Override
+                    public void consoleLog(V8Value... v8Values) {
+                        for (V8Value value : v8Values) {
+                            stdout.append(value.toString()).append('\n');
+                        }
+                    }
+
+                    @Override
+                    public void consoleTrace(V8Value... v8Values) {
+                        for (V8Value value : v8Values) {
+                            stdout.append(value.toString()).append('\n');
+                        }
+                    }
+
+                    @Override
+                    public void consoleWarn(V8Value... v8Values) {
+                        for (V8Value value : v8Values) {
+                            stdout.append(value.toString()).append('\n');
+                        }
+                    }
+                };
+
+                consoleInterceptor.register(runtime.getGlobalObject());
+                runtime.getExecutor(jsCode).executeVoid();
+                consoleInterceptor.unregister(runtime.getGlobalObject());
+
+                return new SubmissionRunResult(SubmissionRunStatus.ACCEPTED, stdout.toString());
+            } catch (JavetCompilationException err) {
+                return new SubmissionRunResult(
+                    SubmissionRunStatus.COMPILE_ERROR,
+                    err.getScriptingError().toString()
+                );
+            } catch (JavetExecutionException err) {
+                return new SubmissionRunResult(
+                    SubmissionRunStatus.RUNTIME_ERROR,
+                    err.getScriptingError().toString()
+                );
             } catch (JavetException err) {
-                return new SubmissionRunResult(1, err.toString());
+                return new SubmissionRunResult(SubmissionRunStatus.RUNTIME_ERROR, err.toString());
             }
         });
-    }
-
-    public static void main(String[] args) {
-        new JavetSubmissionRunner(new JavetEnginePool<>())
-            .run("console.log('hi')")
-            .subscribe()
-            .with(
-                res -> System.out.println(res),
-                err -> err.printStackTrace()
-            );
     }
 
 }
