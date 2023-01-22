@@ -37,9 +37,9 @@ public class ProblemResource {
         return problemService
             .getOneByIdx(idx)
             .onItemOrFailure()
-            .transform((problem, throwable) -> {
-                if (throwable != null) {
-                    if (throwable instanceof IndexOutOfBoundsException) {
+            .transform((problem, error) -> {
+                if (error != null) {
+                    if (error instanceof IndexOutOfBoundsException) {
                         return Response
                             .status(Response.Status.BAD_REQUEST)
                             .entity(Map.ofEntries(
@@ -51,7 +51,7 @@ public class ProblemResource {
                     return Response
                         .status(Response.Status.INTERNAL_SERVER_ERROR)
                         .entity(Map.ofEntries(
-                            Map.entry("content", throwable.getClass().getSimpleName())
+                            Map.entry("content", error.getClass().getSimpleName())
                         ))
                         .build();
                 }
