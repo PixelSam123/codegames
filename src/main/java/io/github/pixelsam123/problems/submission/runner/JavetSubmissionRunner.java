@@ -24,10 +24,14 @@ public class JavetSubmissionRunner implements ISubmissionRunner {
     @Override
     public Uni<SubmissionRunResult> run(String jsCode) {
         return Uni.createFrom().item(() -> {
-            try (IJavetEngine<V8Runtime> javetEngine = javetEnginePool.getEngine()) {
-                V8Runtime runtime = javetEngine.getV8Runtime();
+            StringBuilder stdout = new StringBuilder();
 
-                StringBuilder stdout = new StringBuilder();
+            try (
+                IJavetEngine<V8Runtime> javetEngine = javetEnginePool.getEngine();
+                V8Runtime runtime = javetEngine.getV8Runtime()
+            ) {
+                runtime.resetContext();
+
                 BaseJavetConsoleInterceptor consoleInterceptor = new BaseJavetConsoleInterceptor(
                     runtime
                 ) {
@@ -80,14 +84,14 @@ public class JavetSubmissionRunner implements ISubmissionRunner {
 
                 return new SubmissionRunResult(SubmissionRunStatus.ACCEPTED, stdout.toString());
             } catch (JavetCompilationException err) {
+                stdout.append(err.getScriptingError().toString()).append('\n');
                 return new SubmissionRunResult(
-                    SubmissionRunStatus.COMPILE_ERROR,
-                    err.getScriptingError().toString()
+                    SubmissionRunStatus.COMPILE_ERROR, stdout.toString()
                 );
             } catch (JavetExecutionException err) {
+                stdout.append(err.getScriptingError().toString()).append('\n');
                 return new SubmissionRunResult(
-                    SubmissionRunStatus.RUNTIME_ERROR,
-                    err.getScriptingError().toString()
+                    SubmissionRunStatus.RUNTIME_ERROR, stdout.toString()
                 );
             } catch (JavetException err) {
                 return new SubmissionRunResult(SubmissionRunStatus.RUNTIME_ERROR, err.toString());
