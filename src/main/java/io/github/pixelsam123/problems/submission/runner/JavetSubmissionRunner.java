@@ -3,6 +3,7 @@ package io.github.pixelsam123.problems.submission.runner;
 import com.caoccao.javet.exceptions.JavetCompilationException;
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.exceptions.JavetExecutionException;
+import com.caoccao.javet.exceptions.JavetTerminatedException;
 import com.caoccao.javet.interception.logging.BaseJavetConsoleInterceptor;
 import com.caoccao.javet.interop.V8Runtime;
 import com.caoccao.javet.interop.engine.IJavetEngine;
@@ -11,6 +12,7 @@ import com.caoccao.javet.values.V8Value;
 import io.smallrye.mutiny.Uni;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.time.Duration;
 
 @ApplicationScoped
 public class JavetSubmissionRunner implements ISubmissionRunner {
@@ -78,6 +80,16 @@ public class JavetSubmissionRunner implements ISubmissionRunner {
                     }
                 };
 
+                // Timeout mechanism
+                Uni
+                    .createFrom()
+                    .voidItem()
+                    .onItem()
+                    .delayIt()
+                    .by(Duration.ofSeconds(5L))
+                    .subscribe()
+                    .with(unused -> runtime.terminateExecution());
+
                 consoleInterceptor.register(runtime.getGlobalObject());
                 runtime.getExecutor(jsCode).executeVoid();
                 consoleInterceptor.unregister(runtime.getGlobalObject());
@@ -90,6 +102,11 @@ public class JavetSubmissionRunner implements ISubmissionRunner {
                 );
             } catch (JavetExecutionException err) {
                 stdout.append(err.getScriptingError().toString()).append('\n');
+                return new SubmissionRunResult(
+                    SubmissionRunStatus.RUNTIME_ERROR, stdout.toString()
+                );
+            } catch (JavetTerminatedException err) {
+                stdout.append("Timed out. Details: ").append(err.getMessage()).append('\n');
                 return new SubmissionRunResult(
                     SubmissionRunStatus.RUNTIME_ERROR, stdout.toString()
                 );
