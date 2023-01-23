@@ -7,10 +7,7 @@ import io.github.pixelsam123.problems.submission.runner.JavetSubmissionRunner;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -18,7 +15,10 @@ import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.security.Principal;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Path("/problems/v1/submission")
@@ -36,6 +36,34 @@ public class SubmissionResource {
         this.problemService = problemService;
         this.submissionRunner = submissionRunner;
         this.dataSource = dataSource;
+    }
+
+    @GET
+    @Path("/{idx}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Uni<Response> getAllForProblem(int idx) {
+        return Uni.createFrom().item(() -> {
+            try (PreparedStatement submissionSelection = dataSource
+                .getConnection()
+                .prepareStatement("SELECT * FROM submission WHERE problem_idx=?")) {
+                submissionSelection.setInt(1, idx);
+
+                ResultSet res = submissionSelection.executeQuery();
+
+                List<Submission> submissions = new ArrayList<>();
+                while (res.next()) {
+                    submissions.add(new Submission(
+                        res.getString("user_pk"),
+                        res.getString("content"),
+                        res.getString("status")
+                    ));
+                }
+
+                return Response.ok(submissions).build();
+            } catch (SQLException err) {
+                return Response.serverError().entity(err.toString()).build();
+            }
+        }).runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
     @POST
@@ -68,10 +96,11 @@ public class SubmissionResource {
 
                         try (PreparedStatement submissionInsertion = dataSource
                             .getConnection()
-                            .prepareStatement("INSERT INTO submission VALUES (?,?,?)")) {
+                            .prepareStatement("INSERT INTO submission VALUES (?,?,?,?)")) {
                             submissionInsertion.setString(1, loggedInUser.getName());
-                            submissionInsertion.setString(2, code);
-                            submissionInsertion.setString(3, result.status().value);
+                            submissionInsertion.setInt(2, idx);
+                            submissionInsertion.setString(3, code);
+                            submissionInsertion.setString(4, result.status().value);
 
                             submissionInsertion.executeUpdate();
                         } catch (SQLException err) {

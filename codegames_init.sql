@@ -9,9 +9,10 @@ create table main.user
 
 create table main.submission
 (
-    user_pk TEXT not null
+    user_pk     TEXT not null
         constraint submission_user_name_fk
             references user,
-    content TEXT not null,
-    status  TEXT not null
+    problem_idx INT  not null,
+    content     TEXT not null,
+    status      TEXT not null
 );
