@@ -10,8 +10,11 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+import java.net.URI;
 import java.util.Map;
 
 @Path("/problems/v1/submission")
@@ -32,7 +35,7 @@ public class SubmissionResource {
     @Path("/{idx}")
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Response> postOne(String code, int idx) {
+    public Uni<Response> postOne(@Context SecurityContext loggedInUser, String code, int idx) {
         return problemService
             .getOneByIdx(idx)
             .onItemOrFailure()
@@ -49,7 +52,10 @@ public class SubmissionResource {
                 return submissionRunner
                     .run(code + '\n' + problem.tests())
                     .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
-                    .map(result -> Response.ok(result).build());
+                    .map(result -> Response
+                        .created(URI.create("/problems/v1/submission/" + idx))
+                        .entity(result)
+                        .build());
             });
     }
 

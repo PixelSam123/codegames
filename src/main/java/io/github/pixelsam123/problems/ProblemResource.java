@@ -49,7 +49,7 @@ public class ProblemResource {
                     }
 
                     return Response
-                        .status(Response.Status.INTERNAL_SERVER_ERROR)
+                        .serverError()
                         .entity(Map.ofEntries(
                             Map.entry("content", error.getClass().getSimpleName())
                         ))
