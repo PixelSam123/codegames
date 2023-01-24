@@ -9,6 +9,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,13 +30,16 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Response> getAllPreviews() {
         return Uni.createFrom().item(() -> {
-            try (PreparedStatement userSelection = dataSource.getConnection().prepareStatement("""
-                SELECT
-                    name,
-                    (SELECT count() FROM submission WHERE status='Accepted' AND user_pk=name)
-                        AS accepted_submission_count
-                FROM user
-                """)) {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement userSelection = c.prepareStatement("""
+                    SELECT
+                        name,
+                        (SELECT count() FROM submission WHERE status='Accepted' AND user_pk=name)
+                            AS accepted_submission_count
+                    FROM user
+                    """)
+            ) {
                 ResultSet res = userSelection.executeQuery();
 
                 List<UserPreview> userPreviews = new ArrayList<>();
@@ -60,9 +64,12 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Response> postOne(UserCreationView user) {
         return Uni.createFrom().item(() -> {
-            try (PreparedStatement userInsertion = dataSource.getConnection().prepareStatement(
-                "INSERT INTO user VALUES (?,?,?)"
-            )) {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement userInsertion = c.prepareStatement(
+                    "INSERT INTO user VALUES (?,?,?)"
+                )
+            ) {
                 userInsertion.setString(1, user.name());
                 userInsertion.setString(2, BcryptUtil.bcryptHash(user.password()));
                 userInsertion.setString(3, "user");

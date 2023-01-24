@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.security.Principal;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -43,9 +44,12 @@ public class SubmissionResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Response> getAllForProblem(int idx) {
         return Uni.createFrom().item(() -> {
-            try (PreparedStatement submissionSelection = dataSource
-                .getConnection()
-                .prepareStatement("SELECT * FROM submission WHERE problem_idx=?")) {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement submissionSelection = c.prepareStatement(
+                    "SELECT * FROM submission WHERE problem_idx=?"
+                )
+            ) {
                 submissionSelection.setInt(1, idx);
 
                 ResultSet res = submissionSelection.executeQuery();
@@ -94,9 +98,12 @@ public class SubmissionResource {
                             return Response.ok(result).build();
                         }
 
-                        try (PreparedStatement submissionInsertion = dataSource
-                            .getConnection()
-                            .prepareStatement("INSERT INTO submission VALUES (?,?,?,?)")) {
+                        try (
+                            Connection c = dataSource.getConnection();
+                            PreparedStatement submissionInsertion = c.prepareStatement(
+                                "INSERT INTO submission VALUES (?,?,?,?)"
+                            )
+                        ) {
                             submissionInsertion.setString(1, loggedInUser.getName());
                             submissionInsertion.setInt(2, idx);
                             submissionInsertion.setString(3, code);
