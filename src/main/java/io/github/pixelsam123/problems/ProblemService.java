@@ -10,6 +10,24 @@ public class ProblemService {
 
     private static final List<Problem> problems = List.of(
         new Problem(
+            "Welcome!",
+            """
+                This is a sample question to get you started.
+                Simply return `hello world` from the `welcome` function supplied in your editor, optionally add login information and hit submit!
+                If you have entered credentials before hitting submit, you'll see your submission on the link above this challenge.
+                """.trim(),
+            "const welcome = () => {}",
+            """
+                function assertEquals(actual, expected, msg = 'Did not pass test!') {
+                    if (actual !== expected) throw Error(`${msg}\\nExpected: ${expected}\\nActual: ${actual}`)
+                }
+                function test(actual, expected) {
+                    assertEquals(welcome(), 'hello world')
+                }
+                test()
+                """.trim()
+        ),
+        new Problem(
             "Clamp Trolls",
             """
                 Streamers are becoming really angry! They keep getting donation messages with repeated symbols like this:
@@ -51,7 +69,7 @@ public class ProblemService {
                     2,
                     '@@ akeong akeong !! akeong @@ wajah tersenyum wajah tersenyum ##'
                 )
-                """
+                """.trim()
         )
     );
 
