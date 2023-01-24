@@ -91,25 +91,29 @@ public class JavetSubmissionRunner implements ISubmissionRunner {
                     .with(unused -> runtime.terminateExecution());
 
                 consoleInterceptor.register(runtime.getGlobalObject());
-                runtime.getExecutor(jsCode).executeVoid();
-                consoleInterceptor.unregister(runtime.getGlobalObject());
+
+                try {
+                    runtime.getExecutor(jsCode).executeVoid();
+                } catch (JavetCompilationException err) {
+                    stdout.append(err.getScriptingError().toString()).append('\n');
+                    return new SubmissionRunResult(
+                        SubmissionRunStatus.COMPILE_ERROR, stdout.toString()
+                    );
+                } catch (JavetExecutionException err) {
+                    stdout.append(err.getScriptingError().toString()).append('\n');
+                    return new SubmissionRunResult(
+                        SubmissionRunStatus.RUNTIME_ERROR, stdout.toString()
+                    );
+                } catch (JavetTerminatedException err) {
+                    stdout.append("Timed out. Details: ").append(err.getMessage()).append('\n');
+                    return new SubmissionRunResult(
+                        SubmissionRunStatus.RUNTIME_ERROR, stdout.toString()
+                    );
+                } finally {
+                    consoleInterceptor.unregister(runtime.getGlobalObject());
+                }
 
                 return new SubmissionRunResult(SubmissionRunStatus.ACCEPTED, stdout.toString());
-            } catch (JavetCompilationException err) {
-                stdout.append(err.getScriptingError().toString()).append('\n');
-                return new SubmissionRunResult(
-                    SubmissionRunStatus.COMPILE_ERROR, stdout.toString()
-                );
-            } catch (JavetExecutionException err) {
-                stdout.append(err.getScriptingError().toString()).append('\n');
-                return new SubmissionRunResult(
-                    SubmissionRunStatus.RUNTIME_ERROR, stdout.toString()
-                );
-            } catch (JavetTerminatedException err) {
-                stdout.append("Timed out. Details: ").append(err.getMessage()).append('\n');
-                return new SubmissionRunResult(
-                    SubmissionRunStatus.RUNTIME_ERROR, stdout.toString()
-                );
             } catch (JavetException err) {
                 return new SubmissionRunResult(SubmissionRunStatus.RUNTIME_ERROR, err.toString());
             }
