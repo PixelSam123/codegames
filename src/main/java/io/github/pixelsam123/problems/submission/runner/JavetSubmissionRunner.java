@@ -15,7 +15,9 @@ import javax.enterprise.context.ApplicationScoped;
 import java.time.Duration;
 
 @ApplicationScoped
-public class JavetSubmissionRunner implements ISubmissionRunner {
+public class JavetSubmissionRunner implements SubmissionRunner {
+
+    private static final long runTimeoutDuration = 5L;
 
     private final IJavetEnginePool<V8Runtime> javetEnginePool;
 
@@ -80,13 +82,12 @@ public class JavetSubmissionRunner implements ISubmissionRunner {
                     }
                 };
 
-                // Timeout mechanism
                 Uni
                     .createFrom()
                     .voidItem()
                     .onItem()
                     .delayIt()
-                    .by(Duration.ofSeconds(5L))
+                    .by(Duration.ofSeconds(runTimeoutDuration))
                     .subscribe()
                     .with(unused -> runtime.terminateExecution());
 

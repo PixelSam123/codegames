@@ -14,8 +14,7 @@ public class ProblemService {
             """
                 This is a sample question to get you started.
                 Simply return `hello world` from the `welcome` function supplied in your editor, optionally add login information and hit submit!
-                If you have entered credentials before hitting submit, you'll see your submission on the link above this challenge.
-                """.trim(),
+                If you have entered credentials before hitting submit, you'll see your submission on the link above this challenge.""",
             "const welcome = () => {}",
             """
                 function assertEquals(actual, expected, msg = 'Did not pass test!') {
@@ -24,8 +23,7 @@ public class ProblemService {
                 function test(actual, expected) {
                     assertEquals(welcome(), 'hello world')
                 }
-                test()
-                """.trim()
+                test()"""
         ),
         new Problem(
             "Clamp Trolls",
@@ -46,8 +44,7 @@ public class ProblemService {
                 ```
                 clampTrolls('your smiley face smiley face smiley face smiley face', 2) // 'your smiley face smiley face'
                 ```
-                Please help them before they throw their phones in rage!
-                """.trim(),
+                Please help them before they throw their phones in rage!""",
             "const clampTrolls = (str, maxLimit) => {}",
             """
                 function assertEquals(actual, expected, msg = 'Did not pass test!') {
@@ -68,8 +65,7 @@ public class ProblemService {
                     '@@@@@@@@@@@ akeong akeong akeong !!!! akeong @@@@@@ wajah tersenyum wajah tersenyum wajah tersenyum ###',
                     2,
                     '@@ akeong akeong !! akeong @@ wajah tersenyum wajah tersenyum ##'
-                )
-                """.trim()
+                )"""
         )
     );
 

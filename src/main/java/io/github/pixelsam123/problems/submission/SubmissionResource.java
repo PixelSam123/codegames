@@ -2,7 +2,7 @@ package io.github.pixelsam123.problems.submission;
 
 import io.agroal.api.AgroalDataSource;
 import io.github.pixelsam123.problems.ProblemService;
-import io.github.pixelsam123.problems.submission.runner.ISubmissionRunner;
+import io.github.pixelsam123.problems.submission.runner.SubmissionRunner;
 import io.github.pixelsam123.problems.submission.runner.JavetSubmissionRunner;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
@@ -26,7 +26,7 @@ import java.util.Map;
 public class SubmissionResource {
 
     private final ProblemService problemService;
-    private final ISubmissionRunner submissionRunner;
+    private final SubmissionRunner submissionRunner;
     private final AgroalDataSource dataSource;
 
     public SubmissionResource(

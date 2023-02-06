@@ -37,8 +37,7 @@ public class UserResource {
                         name,
                         (SELECT count() FROM submission WHERE status='Accepted' AND user_pk=name)
                             AS accepted_submission_count
-                    FROM user
-                    """)
+                    FROM user""")
             ) {
                 ResultSet res = userSelection.executeQuery();
 
